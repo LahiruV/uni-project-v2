@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { AuthHeader } from '../components/AuthHeader'
 import { Shield, Loader2 } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query'
 import { adminRegister } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import type { AdminRegisterDto } from '../services/types'
@@ -10,7 +11,6 @@ import type { AdminRegisterDto } from '../services/types'
 export function AdminRegister() {
   const navigate = useNavigate()
   const { login: authLogin } = useAuth()
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState<AdminRegisterDto>({
     name: '',
@@ -19,22 +19,21 @@ export function AdminRegister() {
     adminCode: ''
   })
 
+  const mutation = useMutation({
+    mutationFn: adminRegister,
+    onSuccess: (data) => {
+      authLogin(data.token)
+      navigate('/admin')
+    },
+    onError: () => {
+      setError('Registration failed. Please verify your Username and Password.')
+    },
+  })
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
-
-    try {
-      const { token } = await adminRegister(formData)
-      authLogin(token)
-      navigate('/admin')
-    } catch (err) {
-      console.log(err);
-
-      setError('Registration failed. Please verify your  Username and Password.')
-    } finally {
-      setLoading(false)
-    }
+    mutation.mutate(formData)
   }
 
   return (
@@ -122,9 +121,9 @@ export function AdminRegister() {
               <button
                 type="submit"
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                disabled={loading}
+                disabled={mutation.isPending}
               >
-                {loading ? (
+                {mutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Shield className="h-4 w-4 mr-2" />
