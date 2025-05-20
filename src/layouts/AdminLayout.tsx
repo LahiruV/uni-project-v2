@@ -1,14 +1,9 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Outlet } from 'react-router-dom'
 import { LogOut } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { Footer } from '../components/Footer'
 
-interface AdminLayoutProps {
-  children: React.ReactNode
-}
-
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout() {
   const navigate = useNavigate()
   const { logout } = useAuth()
 
@@ -33,8 +28,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </div>
       </div>
-      <div className="flex-grow pt-24 pb-16">
-        {children}
+      <div className="pt-24 flex-grow">
+        <Outlet />
       </div>
     </div>
   )

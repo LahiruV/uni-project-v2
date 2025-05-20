@@ -1,9 +1,7 @@
 import { Hero } from '../components/Hero'
-import { UserLayout } from '../layouts/UserLayout'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Loader2 } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useQuery } from '@tanstack/react-query'
-import { getFeedbacks } from '../services/api'
+import { useFeedbacks } from '../services/queries'
 
 interface FeedbackItem {
   id: string
@@ -14,13 +12,10 @@ interface FeedbackItem {
 }
 
 export function Home() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['feedback'],
-    queryFn: getFeedbacks,
-  })
+  const { data: feedbackResponse, isLoading, error } = useFeedbacks()
 
   return (
-    <UserLayout>
+    <>
       <Hero />
       {/* Feedback Section */}
       <div className="bg-white py-16">
@@ -43,17 +38,15 @@ export function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {isLoading ? (
-              Array(3).fill(0).map((_, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-6 animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              ))
-            ) : error ? (
-              <div className="col-span-3 text-center text-red-600">
-                Failed to load feedback. Please try again later.
+              <div className="col-span-3 text-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-yellow-500" />
+                <p className="mt-2 text-gray-600">Loading feedback...</p>
               </div>
-            ) : data?.feedbacks.map((feedback) => (
+            ) : error ? (
+              <div className="col-span-3 text-center py-8">
+                <p className="text-red-600">Error loading feedback</p>
+              </div>
+            ) : feedbackResponse?.feedbacks.map((feedback) => (
               <motion.div
                 key={feedback.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -74,6 +67,6 @@ export function Home() {
           </div>
         </div>
       </div>
-    </UserLayout>
+    </>
   )
 }

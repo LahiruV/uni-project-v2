@@ -1,13 +1,10 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AuthLayout } from '../layouts/AuthLayout'
-import { AuthHeader } from '../components/AuthHeader'
 import { UserPlus, Loader2 } from 'lucide-react'
-import { useMutation } from '@tanstack/react-query'
-import { register } from '../services/api'
+import { toast } from 'sonner'
+import { useRegister } from '../services/queries'
 import { useAuth } from '../contexts/AuthContext'
 import type { RegisterDto } from '../services/types'
-
 
 export function Register() {
   const navigate = useNavigate()
@@ -19,37 +16,34 @@ export function Register() {
     password: '',
   })
 
-  const mutation = useMutation({
-    mutationFn: register,
-    onSuccess: (data) => {
-      authLogin(data.token)
-      navigate('/')
-    },
-    onError: () => {
-      setError('Registration failed. Please try again.')
-    },
-  })
+  const registerMutation = useRegister()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    mutation.mutate(formData)
+
+    try {
+      const { token } = await registerMutation.mutateAsync(formData)
+      authLogin(token)
+      navigate('/')
+      toast.success('Account created successfully!')
+    } catch (err) {
+      toast.error('Registration failed. Please try again.')
+    }
   }
 
   return (
-    <AuthLayout>
-      <AuthHeader />
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden flex">
-          <div className="hidden lg:block lg:w-1/2 relative">
-            <img
-              src="https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=2086"
-              alt="University campus"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-          </div>
-          <div className="w-full lg:w-1/2 p-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden flex">
+            <div className="hidden lg:block lg:w-1/2 relative">
+              <img
+                src="https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=2086"
+                alt="University campus"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+            </div>
+            <div className="w-full lg:w-1/2 p-8">
             <div className="flex items-center justify-center space-x-3 mb-8">
               <UserPlus className="h-8 w-8 text-yellow-500" />
               <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
@@ -107,14 +101,14 @@ export function Register() {
               <button
                 type="submit"
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                disabled={mutation.isPending}
+                disabled={registerMutation.isPending}
               >
-                {mutation.isPending ? (
+                {registerMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <UserPlus className="h-4 w-4 mr-2" />
                 )}
-                {loading ? 'Creating account...' : 'Create Account'}
+                {registerMutation.isPending ? 'Creating account...' : 'Create Account'}
               </button>
             </form>
 
@@ -126,9 +120,8 @@ export function Register() {
                 </Link>
               </p>
             </div>
+            </div>
           </div>
         </div>
-      </div>
-    </AuthLayout>
   )
 }

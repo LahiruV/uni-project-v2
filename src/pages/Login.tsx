@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AuthLayout } from '../layouts/AuthLayout'
 import { LogIn, Loader2 } from 'lucide-react'
-import { useMutation } from '@tanstack/react-query'
-import { login } from '../services/api'
+import { toast } from 'sonner'
+import { useLogin } from '../services/queries'
 import { useAuth } from '../contexts/AuthContext'
 import type { LoginDto } from '../services/types'
 
@@ -16,26 +15,23 @@ export function Login() {
     password: '',
   })
 
-  const mutation = useMutation({
-    mutationFn: login,
-    onSuccess: (data) => {
-      authLogin(data.token)
-      navigate('/')
-    },
-    onError: () => {
-      setError('Invalid email or password')
-    },
-  })
+  const loginMutation = useLogin()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    // Store token in localStorage or a state management solution
-    mutation.mutate(formData)
+
+    try {
+      const { token } = await loginMutation.mutateAsync(formData)
+      authLogin(token)
+      navigate('/')
+      toast.success('Successfully logged in!')
+    } catch (err) {
+      toast.error('Invalid email or password')
+    }
   }
 
   return (
-    <AuthLayout>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden flex">
           <div className="hidden lg:block lg:w-1/2 relative">
@@ -92,14 +88,14 @@ export function Login() {
               <button
                 type="submit"
                 className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                disabled={mutation.isPending}
+                disabled={loginMutation.isPending}
               >
-                {mutation.isPending ? (
+                {loginMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <LogIn className="h-4 w-4 mr-2" />
                 )}
-                {mutation.isPending ? 'Signing in...' : 'Sign In'}
+                {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
               </button>
             </form>
 
@@ -114,6 +110,5 @@ export function Login() {
           </div>
         </div>
       </div>
-    </AuthLayout>
   )
 }

@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { Layout } from '../components/Layout'
 import { Send, Bot, User } from 'lucide-react'
 import { getChatResponse } from '../services/gemini'
 
@@ -65,7 +64,6 @@ export function Chatbot() {
   }
 
   return (
-    <Layout>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-lg shadow-lg h-[600px] flex flex-col">
             <div className="p-4 border-b border-gray-200">
@@ -129,6 +127,5 @@ export function Chatbot() {
             </form>
           </div>
         </div>
-    </Layout>
   )
 }

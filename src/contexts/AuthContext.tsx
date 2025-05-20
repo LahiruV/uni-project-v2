@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { getUser } from '../services/api'
 
 interface AuthContextType {
   isAuthenticated: boolean
@@ -12,29 +10,12 @@ const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const navigate = useNavigate()
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    async function checkAuth() {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        setIsLoading(false)
-        return
-      }
-      
-      try {
-        await getUser()
-        setIsAuthenticated(true)
-      } catch (error) {
-        localStorage.removeItem('token')
+    const token = localStorage.getItem('token')
+    if (token) {
       setIsAuthenticated(true)
-      } finally {
-        setIsLoading(false)
-      }
     }
-    
-    checkAuth()
   }, [])
 
   const login = (token: string) => {
@@ -45,11 +26,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem('token')
     setIsAuthenticated(false)
-    navigate('/login')
-  }
-
-  if (isLoading) {
-    return null
   }
 
   return (

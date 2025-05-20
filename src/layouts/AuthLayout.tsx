@@ -1,17 +1,14 @@
 import React from 'react'
+import { Outlet } from 'react-router-dom'
 import { AuthHeader } from '../components/AuthHeader'
 import { AuthFooter } from '../components/AuthFooter'
 
-interface AuthLayoutProps {
-  children: React.ReactNode
-}
-
-export function AuthLayout({ children }: AuthLayoutProps) {
+export function AuthLayout() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <AuthHeader />
-      <div className="flex-grow pt-24 pb-16">
-        {children}
+      <div className="pt-24 flex-grow">
+        <Outlet />
       </div>
       <AuthFooter />
     </div>
